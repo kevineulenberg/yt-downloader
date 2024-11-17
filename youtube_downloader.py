@@ -33,24 +33,20 @@ class DownloadThread(QThread):
                     '--audio-format', 'mp3',  # Convert to MP3
                     '--audio-quality', '0',  # Best quality
                 ])
-            else:
+            else:  # mp4
                 cmd.extend([
-                    '-f', 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best',  # Best quality MP4 video + M4A audio
-                    '--merge-output-format', 'mp4',  # Ensure output is merged as MP4
-                    '--format-sort', 'res,fps,codec:h264,size,br,asr',  # Sort by resolution, then fps, etc.
-                    '--prefer-free-formats',  # Prefer formats with free codecs
-                    '--postprocessor-args', '-c:v copy -c:a aac',  # Use FFmpeg to copy video and convert audio to AAC
+                    '-f', 'best',  # Get best quality format
+                    '--extract-audio',  # Extract audio
+                    '--recode-video', 'mp4',  # Recode to MP4
                 ])
             
             # Add common options
             cmd.extend([
                 '-o', os.path.join(download_dir, '%(title)s.%(ext)s'),  # Output template
                 '--newline',  # Force progress on newline
-                '--progress',  # Show progress bar
+                '--progress-template', '[download] %(progress._percent_str)s',  # Simplified progress output
                 '--no-part',  # Do not use .part files
                 '--force-overwrite',  # Overwrite if file exists
-                '--verbose',  # Show verbose output for debugging
-                '--merge-output-format', 'mp4',  # Force MP4 as final format
                 '--ffmpeg-location', '/usr/local/bin/ffmpeg',  # Specify FFmpeg location
                 self.url
             ])
@@ -77,10 +73,12 @@ class DownloadThread(QThread):
                     print(f"Output: {output.strip()}")
                     if '[download]' in output:
                         try:
-                            progress = int(output.split('%')[0].split()[-1])
-                            self.progress.emit(progress)
-                        except (ValueError, IndexError):
-                            pass
+                            # Extract percentage from progress output
+                            percentage_str = output.strip().split('[download]')[1].strip().rstrip('%')
+                            progress = float(percentage_str)
+                            self.progress.emit(int(progress))
+                        except (ValueError, IndexError) as e:
+                            print(f"Progress parsing error: {str(e)}")
             
             # Get the final output and error
             stdout, stderr = process.communicate()
