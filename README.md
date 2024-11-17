@@ -1,6 +1,6 @@
 # YouTube Downloader for macOS
 
-A sleek, user-friendly macOS application to download YouTube videos and audio with a clean, minimal interface.
+A sleek, user-friendly macOS application to download YouTube videos and audio with a clean, minimal interface based on PyQt6 and yt-dlp. yt-dl is a feature-rich command-line audio/video downloader with support for thousands of sites. This app provides a simple and easy-to-use interface for downloading YouTube videos and audio in MP4 and MP3 formats.
 
 ## Features
 
